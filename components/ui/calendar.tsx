@@ -24,6 +24,38 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>['variant']
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const [isClient, setIsClient] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Consistent date formatting function
+  const formatDate = React.useCallback((date: Date) => {
+    // Always use DD/MM/YYYY format to avoid locale differences
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear()
+    return `${day}/${month}/${year}`
+  }, [])
+
+  // Don't render on server to avoid hydration mismatch
+  if (!isClient) {
+    return (
+      <div className={cn(
+        'bg-background p-3 w-fit rounded-md animate-pulse',
+        '[[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent',
+        className
+      )}>
+        <div className="h-6 w-32 bg-muted rounded mb-4"></div>
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: 42 }).map((_, i) => (
+            <div key={i} className="aspect-square bg-muted rounded"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <DayPicker
@@ -179,18 +211,35 @@ function CalendarDayButton({
   ...props
 }: React.ComponentProps<typeof DayButton>) {
   const defaultClassNames = getDefaultClassNames()
+  const [isClient, setIsClient] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const ref = React.useRef<HTMLButtonElement>(null)
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
 
+  // Consistent date formatting
+  const formatDate = React.useCallback((date: Date) => {
+    // Always use DD/MM/YYYY format to avoid locale differences
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear()
+    return `${day}/${month}/${year}`
+  }, [])
+
+  // Format date only on client
+  const formattedDate = isClient ? formatDate(day.date) : ''
+
   return (
     <Button
       ref={ref}
       variant="ghost"
       size="icon"
-      data-day={day.date.toLocaleDateString()}
+      data-day={formattedDate}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&
