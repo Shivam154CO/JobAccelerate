@@ -1,5 +1,6 @@
 "use client"
 
+import { ErrorBoundary } from "@/components/error-boundary"
 import { NavHeader } from "@/components/nav-header"
 import { HeroSection } from "@/components/hero-section"
 import { FeaturesShowcase } from "@/components/features-showcase"
@@ -11,7 +12,8 @@ import { FAQSection } from "@/components/faq-section"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 
-export default function Home() {
+// Homepage content component
+function HomeContent() {
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
@@ -54,5 +56,14 @@ export default function Home() {
 
       <Footer />
     </div>
+  )
+}
+
+// Main homepage with error boundary
+export default function Home() {
+  return (
+    <ErrorBoundary sectionName="Homepage">
+      <HomeContent />
+    </ErrorBoundary>
   )
 }

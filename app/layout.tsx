@@ -2,11 +2,13 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono, Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { GlobalErrorBoundary } from "@/components/global-error-boundary"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
-const _inter = Inter({ subsets: ["latin"] })
+const geist = Geist({ subsets: ["latin"] })
+const geistMono = Geist_Mono({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "JobAccelerateAI - Get 3x More Interviews Using AI",
@@ -47,9 +49,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased bg-background text-foreground`}>
-        {children}
-        <Analytics />
+      <body className={`${geist.className} antialiased bg-background text-foreground`}>
+        <GlobalErrorBoundary>
+          {children}
+          <Toaster />
+          <Analytics />
+        </GlobalErrorBoundary>
       </body>
     </html>
   )

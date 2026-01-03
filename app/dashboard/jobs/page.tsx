@@ -1,18 +1,19 @@
 "use client"
 
+import { ErrorBoundary } from "@/components/error-boundary"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { JobCard, JobCardSkeleton } from "@/components/job-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Filter, Search, RefreshCw, AlertCircle } from "lucide-react"
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect } from "react"
 
-// Mock API function (replace with actual API call)
+// Mock API function
 const fetchJobs = async () => {
-  await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate network delay
   
-  // Simulate random errors
+  // Simulate random errors (10% chance)
   if (Math.random() < 0.1) {
     throw new Error("Failed to fetch jobs. Please try again.")
   }
@@ -93,10 +94,8 @@ function JobsContent() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedFilters, setSelectedFilters] = useState<string[]>([])
-  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    setIsClient(true)
     loadJobs()
   }, [])
 
@@ -114,17 +113,15 @@ function JobsContent() {
     }
   }
 
-  // Filter jobs based on search and filters
+  // Filter jobs based on search
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = searchQuery === "" || 
+    if (!searchQuery) return true
+    
+    return (
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    
-    const matchesFilters = selectedFilters.length === 0 ||
-      selectedFilters.every(filter => job.tags.includes(filter))
-    
-    return matchesSearch && matchesFilters
+    )
   })
 
   // Handle job save
@@ -133,7 +130,6 @@ function JobsContent() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500))
       console.log(`Job ${jobId} saved successfully`)
-      // In a real app, update local state or refetch
     } catch (err) {
       console.error("Failed to save job:", err)
     }
@@ -145,26 +141,15 @@ function JobsContent() {
     // Navigate to job details or open modal
   }
 
-  if (!isClient) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 w-48 bg-muted animate-pulse rounded" />
-        <div className="space-y-4">
-          {[1, 2, 3, 4].map((i) => (
-            <JobCardSkeleton key={i} />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return <JobsError error={error} onRetry={loadJobs} />
-  }
-
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="h-10 w-48 bg-muted animate-pulse rounded" />
+          <div className="h-6 w-24 bg-muted animate-pulse rounded" />
+        </div>
+
         {/* Search skeleton */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 h-10 bg-muted animate-pulse rounded" />
@@ -179,6 +164,10 @@ function JobsContent() {
         </div>
       </div>
     )
+  }
+
+  if (error) {
+    return <JobsError error={error} onRetry={loadJobs} />
   }
 
   return (
@@ -197,7 +186,7 @@ function JobsContent() {
             disabled={loading}
             className="h-8"
           >
-            <RefreshCw className={cn("h-3 w-3 mr-2", loading && "animate-spin")} />
+            <RefreshCw className={`h-3 w-3 mr-2 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
@@ -247,8 +236,23 @@ function JobsContent() {
         </div>
       )}
 
+      {/* Empty state */}
+      {filteredJobs.length === 0 && !searchQuery && !loading && (
+        <div className="rounded-lg border bg-muted/50 p-6 text-center">
+          <p className="text-muted-foreground">No jobs available at the moment.</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={loadJobs}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Check for new jobs
+          </Button>
+        </div>
+      )}
+
       {/* Jobs Grid */}
-      {filteredJobs.length > 0 ? (
+      {filteredJobs.length > 0 && (
         <div className="space-y-4">
           {filteredJobs.map((job) => (
             <JobCard
@@ -265,25 +269,13 @@ function JobsContent() {
             />
           ))}
         </div>
-      ) : !searchQuery && !loading ? (
-        <div className="rounded-lg border bg-muted/50 p-6 text-center">
-          <p className="text-muted-foreground">No jobs available at the moment.</p>
-          <Button 
-            variant="outline" 
-            className="mt-4"
-            onClick={loadJobs}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Check for new jobs
-          </Button>
-        </div>
-      ) : null}
+      )}
     </>
   )
 }
 
-// Main Jobs Page
-export default function JobsPage() {
+// Main Jobs Page Component
+function JobsPageContent() {
   return (
     <div className="min-h-screen bg-background">
       <DashboardSidebar />
@@ -291,25 +283,18 @@ export default function JobsPage() {
 
       <main className="ml-20 md:ml-64 pt-20 px-4 sm:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
-          <Suspense fallback={
-            <div className="space-y-6">
-              <div className="h-10 w-48 bg-muted animate-pulse rounded" />
-              <div className="space-y-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
-                ))}
-              </div>
-            </div>
-          }>
-            <JobsContent />
-          </Suspense>
+          <JobsContent />
         </div>
       </main>
     </div>
   )
 }
 
-// Helper function
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
+// Main export with Error Boundary
+export default function JobsPage() {
+  return (
+    <ErrorBoundary sectionName="Jobs Dashboard">
+      <JobsPageContent />
+    </ErrorBoundary>
+  )
 }
