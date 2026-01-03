@@ -1,7 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Check } from "lucide-react"
 import { useState } from "react"
 
@@ -89,9 +87,9 @@ export function PricingSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
-            <Card
+            <div
               key={index}
-              className={`p-8 flex flex-col ${
+              className={`p-8 flex flex-col rounded-lg border ${
                 plan.popular
                   ? "border-primary/50 bg-gradient-to-br from-primary/10 via-card to-secondary/5"
                   : "glassmorphic border-border/20"
@@ -112,9 +110,9 @@ export function PricingSection() {
                 {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
               </div>
 
-              <Button className="w-full mb-8" size="lg" variant={plan.popular ? "default" : "outline"}>
+              <button className={`w-full py-3 rounded-md mb-8 ${plan.popular ? "bg-blue-600 text-white" : "border border-gray-300"}`}>
                 {plan.cta}
-              </Button>
+              </button>
 
               <div className="space-y-4 flex-1">
                 {plan.features.map((feature, i) => (
@@ -135,7 +133,7 @@ export function PricingSection() {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       </div>

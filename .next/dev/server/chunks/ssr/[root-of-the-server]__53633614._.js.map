@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 14, "column": 0}, "map": {"version":3,"sources":["file:///C:/Open%20Souce/EWSoC/JobAccelerate/app/pricing/page.tsx"],"sourcesContent":["import PricingSection from '@component/pricing-section';\r\n\r\nexport default function PricingPage() {\r\n  return <PricingSection />;\r\n}"],"names":[],"mappings":";;;;;;;;;;;;AAEe,SAAS;IACtB,qBAAO,8OAAC;;;;;AACV"}}]
+}
