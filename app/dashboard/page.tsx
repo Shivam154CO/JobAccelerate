@@ -9,8 +9,126 @@ import { JobCard } from "@/components/job-card"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { AlertCircle, RefreshCw } from "lucide-react"
+import { useState, useEffect } from "react"
+
+// Skeleton components for loading state
+function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardSidebar />
+      <DashboardHeader />
+      <main className="ml-20 md:ml-64 pt-20 px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Stats Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-32 bg-muted rounded-lg animate-pulse"></div>
+            ))}
+          </div>
+
+          {/* Main Content Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Chart Skeleton */}
+              <div className="h-80 bg-muted rounded-lg animate-pulse"></div>
+              
+              {/* Jobs Skeleton */}
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-32 bg-muted rounded-lg animate-pulse"></div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Right Column Skeleton */}
+            <div className="space-y-6">
+              <div className="h-64 bg-muted rounded-lg animate-pulse"></div>
+              <div className="h-48 bg-muted rounded-lg animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+// Error display component
+function DashboardError({ error, onRetry }: { error: string, onRetry: () => void }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardSidebar />
+      <DashboardHeader />
+      <main className="ml-20 md:ml-64 pt-20 px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+            <div className="flex items-center gap-3 text-destructive mb-4">
+              <AlertCircle className="h-6 w-6" />
+              <h3 className="text-lg font-semibold">Failed to load dashboard</h3>
+            </div>
+            <p className="text-sm mb-6">{error}</p>
+            <div className="flex gap-3">
+              <Button
+                onClick={onRetry}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="/">Go to Homepage</a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
 
 export default function DashboardPage() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Replace with your actual API call
+      // const response = await fetch('/api/dashboard')
+      // if (!response.ok) throw new Error('Failed to load dashboard')
+      // const data = await response.json()
+      // setDashboardData(data)
+      
+      // For now, set mock data
+      setDashboardData({
+        stats: [
+          { label: "Applications Sent", value: "128", change: "+12%" },
+          { label: "Interviews", value: "18", change: "+5%" },
+          { label: "Avg. Response Time", value: "2.4 days", change: "-0.5" },
+          { label: "Success Rate", value: "14%", change: "+2%" }
+        ]
+      })
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) return <DashboardSkeleton />
+  if (error) return <DashboardError error={error} onRetry={fetchDashboardData} />
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardSidebar />
@@ -22,7 +140,7 @@ export default function DashboardPage() {
           <DashboardStats />
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
             {/* Left Column: Analytics & Jobs */}
             <div className="lg:col-span-2 space-y-6">
               {/* Chart */}
